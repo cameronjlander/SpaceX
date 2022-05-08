@@ -21,6 +21,8 @@ export default function Launches() {
     const [showYearPicker, setShowYearPicker] = useState(false);
     const [years, setYears] = useState([]);
     const [selectedYear, setSelectedYear] = useState(["All"]);
+    const [sortDescending, setSortDescending] = useState(true);
+    const [sortOrder, setSortOrder] = useState(R.strings.descending);
 
     useEffect(() => {
         const currentYear = (new Date()).getFullYear();
@@ -30,21 +32,27 @@ export default function Launches() {
             yearOptions.push(year.toString());
         }
         setYears(yearOptions);
-        fetchLaunches()
+        fetchLaunches(sortDescending)
     }, []);
 
-    const refreshList = () => {
+    const refreshList = (sortDescending) => {
         setLoading(true)
         setData([])
         setFilteredList([])
-        fetchLaunches()
+        fetchLaunches(sortDescending)
     }
 
-    const fetchLaunches = async () => {
+    const fetchLaunches = async (sortDescending) => {
         setLoading(true)
 
         let baseUrl = 'https://api.spacexdata.com/v3'
         let url = `${baseUrl}/launches`
+
+        if (sortDescending) {
+            url += '?sort=launch_date_utc&order=desc'
+        } else {
+            url += '?sort=launch_date_utc&order=asc'
+        }
 
         try {
             let response = await fetch(url, {
@@ -94,6 +102,16 @@ export default function Launches() {
         setFilteredList(list);
     }
 
+    const toggleSortOrder = () => {
+        let sortByText = R.strings.ascending
+        if (sortDescending) {
+            sortByText = R.strings.descending
+        }
+        setSortOrder(sortByText)
+        setSortDescending(!sortDescending);
+        refreshList(!sortDescending);
+    }
+
     const renderEmptyContainer = () => {
         return (
             <View>
@@ -111,7 +129,7 @@ export default function Launches() {
                 />
                 <Text style={styles.header}>{R.strings.launches}</Text>
             </View>
-            <View style={styles.imageContainer}>
+            <View style={styles.horizontalContainer}>
                 <Image
                     source={R.images.launch_home}
                     style={styles.launchImg}
@@ -120,22 +138,34 @@ export default function Launches() {
                     text={R.strings.reload}
                     icon={R.icons.refresh}
                     rounded={true}
-                    onPress={() => refreshList()}
+                    onPress={() => refreshList(sortDescending)}
                 />
             </View>
 
-            <Button
-                text={R.strings.filter}
-                icon={R.icons.select}
-                onPress={() => toggleYearPicker()}
-            />
-            {showYearPicker && (
-                <WheelPicker
-                    selectedIndex={years.indexOf(selectedYear)}
-                    options={years.map(year => year.toString())}
-                    onChange={(index) => yearSelected(index)}
-                />
-            )}
+            <View style={styles.horizontalContainer}>
+                <View style={styles.button}>
+                    <Button
+                        text={R.strings.filter}
+                        icon={R.icons.select}
+                        onPress={() => toggleYearPicker()}
+                    />
+                </View>
+                {showYearPicker && (
+                    <WheelPicker
+                        selectedIndex={years.indexOf(selectedYear)}
+                        options={years.map(year => year.toString())}
+                        onChange={(index) => yearSelected(index)}
+                    />
+                )}
+
+                <View style={styles.button}>
+                    <Button
+                        text={R.strings.sort + ' ' + sortOrder}
+                        icon={R.icons.sort}
+                        onPress={() => toggleSortOrder()}
+                    />
+                </View>
+            </View>
 
             <View style={R.palette.resultsContainer}>
                 {isLoading ? <Text>{R.strings.loading}</Text> : (
@@ -149,7 +179,7 @@ export default function Launches() {
                                 rocketName={item.rocket.rocket_name}
                             />
                         }
-                        keyExtractor={(item, index) => item.flight_number.toString()}
+                        keyExtractor={(item, index) => index}
                         ListEmptyComponent={renderEmptyContainer()}
                     />
                 )}
@@ -177,7 +207,7 @@ const styles = StyleSheet.create({
         color: R.colors.text,
         paddingTop: 8
     },
-    imageContainer: {
+    horizontalContainer: {
         flexDirection: 'row'
     },
     launchImg: {
@@ -187,5 +217,8 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         height: width / 3,
         width: (width / 3) * 0.77
+    },
+    button: {
+        margin: 8
     }
 });

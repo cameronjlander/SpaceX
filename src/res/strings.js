@@ -6,7 +6,10 @@ const strings = {
     pleaseTryAgain: 'Please try again.',
     noResults: 'No results found',
     reload: 'Reload Data',
-    filter: 'Filter by Year'
+    filter: 'Filter by Year',
+    sort: 'Sort',
+    descending: 'Descending',
+    ascending: 'Ascending'
 }
 
 export default strings
