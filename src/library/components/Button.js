@@ -2,10 +2,10 @@ import React, { Component } from 'react'
 import { StyleSheet, TouchableOpacity, Text, Image } from 'react-native'
 import R from 'res/R'
 
-export default function RoundedButton(props) {
+export default function Button(props) {
     return (
         <TouchableOpacity
-            style={styles.button}
+            style={props.rounded ? styles.roundedButton : styles.button}
             onPress={props.onPress}
         >
             <Text style={styles.text}>{props.text}</Text>
@@ -18,11 +18,17 @@ export default function RoundedButton(props) {
 }
 
 const styles = StyleSheet.create({
-    button: {
+    roundedButton: {
         flexDirection: 'row',
         alignSelf: 'center',
         padding: 12,
         borderRadius: 14,
+        backgroundColor: R.colors.blue
+    },
+    button: {
+        flexDirection: 'row',
+        alignSelf: 'center',
+        padding: 12,
         backgroundColor: R.colors.blue
     },
     text: {

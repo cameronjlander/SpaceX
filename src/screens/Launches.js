@@ -11,19 +11,32 @@ import {
 } from 'react-native';
 import R from 'res/R'
 import LaunchItem from '../library/components/LaunchItem';
-import RoundedButton from '../library/components/RoundedButton';
+import Button from '../library/components/Button';
+import WheelPicker from 'react-native-wheely';
 
 export default function Launches() {
     const [isLoading, setLoading] = useState(true);
-    const [list, setList] = useState([]);
+    const [data, setData] = useState([]);
+    const [filteredList, setFilteredList] = useState([]);
+    const [showYearPicker, setShowYearPicker] = useState(false);
+    const [years, setYears] = useState([]);
+    const [selectedYear, setSelectedYear] = useState(["All"]);
 
     useEffect(() => {
+        const currentYear = (new Date()).getFullYear();
+        let yearOptions = ["All"];
+        for (let i = 0; i <= 40; i++) {
+            let year = currentYear - i;
+            yearOptions.push(year.toString());
+        }
+        setYears(yearOptions);
         fetchLaunches()
     }, []);
 
     const refreshList = () => {
         setLoading(true)
-        setList([])
+        setData([])
+        setFilteredList([])
         fetchLaunches()
     }
 
@@ -47,7 +60,8 @@ export default function Launches() {
             if (response.status == 200) {
                 try {
                     let responseJson = await response.json()
-                    setList(responseJson)
+                    setData(responseJson);
+                    filterListByYear(responseJson, selectedYear)
                 } catch (errors) {
                     console.warn(errors)
                 }
@@ -59,6 +73,34 @@ export default function Launches() {
             console.warn(errors)
         }
     };
+
+    const toggleYearPicker = () => {
+        let open = showYearPicker
+        setShowYearPicker(!open)
+    }
+
+    const yearSelected = (index) => {
+        let selectedYear = years[index];
+        setSelectedYear(selectedYear);
+        filterListByYear(data, selectedYear)
+    }
+
+    const filterListByYear = (list, year) => {
+        if (year != "All") {
+            list = list.filter(function (item) {
+                return item.launch_year === year;
+            });
+        }
+        setFilteredList(list);
+    }
+
+    const renderEmptyContainer = () => {
+        return (
+            <View>
+                <Text>{R.strings.noResults}</Text>
+            </View>
+        )
+    }
 
     return (
         <View style={R.palette.container}>
@@ -74,16 +116,31 @@ export default function Launches() {
                     source={R.images.launch_home}
                     style={styles.launchImg}
                 />
-                <RoundedButton
+                <Button
                     text={R.strings.reload}
                     icon={R.icons.refresh}
+                    rounded={true}
                     onPress={() => refreshList()}
                 />
             </View>
+
+            <Button
+                text={R.strings.filter}
+                icon={R.icons.select}
+                onPress={() => toggleYearPicker()}
+            />
+            {showYearPicker && (
+                <WheelPicker
+                    selectedIndex={years.indexOf(selectedYear)}
+                    options={years.map(year => year.toString())}
+                    onChange={(index) => yearSelected(index)}
+                />
+            )}
+
             <View style={R.palette.resultsContainer}>
                 {isLoading ? <Text>{R.strings.loading}</Text> : (
                     <FlatList
-                        data={list}
+                        data={filteredList}
                         renderItem={({ item }) =>
                             <LaunchItem
                                 flightNumber={item.flight_number}
@@ -93,6 +150,7 @@ export default function Launches() {
                             />
                         }
                         keyExtractor={(item, index) => item.flight_number.toString()}
+                        ListEmptyComponent={renderEmptyContainer()}
                     />
                 )}
             </View>

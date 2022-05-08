@@ -4,7 +4,9 @@ const strings = {
     loading: 'Loading...',
     errorFetchingLaunches: 'An error occurred fetching launches.',
     pleaseTryAgain: 'Please try again.',
-    reload: 'Reload Data'
+    noResults: 'No results found',
+    reload: 'Reload Data',
+    filter: 'Filter by Year'
 }
 
 export default strings
