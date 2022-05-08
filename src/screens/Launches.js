@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import R from 'res/R'
 import LaunchItem from '../library/components/LaunchItem';
+import RoundedButton from '../library/components/RoundedButton';
 
 export default function Launches() {
     const [isLoading, setLoading] = useState(true);
@@ -20,7 +21,15 @@ export default function Launches() {
         fetchLaunches()
     }, []);
 
+    const refreshList = () => {
+        setLoading(true)
+        setList([])
+        fetchLaunches()
+    }
+
     const fetchLaunches = async () => {
+        setLoading(true)
+
         let baseUrl = 'https://api.spacexdata.com/v3'
         let url = `${baseUrl}/launches`
 
@@ -60,10 +69,17 @@ export default function Launches() {
                 />
                 <Text style={styles.header}>{R.strings.launches}</Text>
             </View>
-            <Image
-                source={R.images.launch_home}
-                style={styles.launchImg}
-            />
+            <View style={styles.imageContainer}>
+                <Image
+                    source={R.images.launch_home}
+                    style={styles.launchImg}
+                />
+                <RoundedButton
+                    text={R.strings.reload}
+                    icon={R.icons.refresh}
+                    onPress={() => refreshList()}
+                />
+            </View>
             <View style={R.palette.resultsContainer}>
                 {isLoading ? <Text>{R.strings.loading}</Text> : (
                     <FlatList
@@ -103,8 +119,12 @@ const styles = StyleSheet.create({
         color: R.colors.text,
         paddingTop: 8
     },
+    imageContainer: {
+        flexDirection: 'row'
+    },
     launchImg: {
-        margin: 8,
+        marginVertical: 8,
+        marginHorizontal: 20,
         overflow: 'visible',
         alignSelf: 'center',
         height: width / 3,

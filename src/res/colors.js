@@ -1,6 +1,7 @@
 const colors = {
     text: '#707070',
     grey: '#bfbfbf',
+    blue: '#005388',
     hyperlink: '#0078ff',
     errorRed: '#ed1c5c',
     warningOrange: '#ffa54f',

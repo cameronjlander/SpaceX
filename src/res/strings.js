@@ -3,7 +3,8 @@ const strings = {
     launches: 'LAUNCHES',
     loading: 'Loading...',
     errorFetchingLaunches: 'An error occurred fetching launches.',
-    pleaseTryAgain: 'Please try again.'
+    pleaseTryAgain: 'Please try again.',
+    reload: 'Reload Data'
 }
 
 export default strings
