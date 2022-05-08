@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { StyleSheet, TouchableOpacity, Text, Image } from 'react-native'
 import R from 'res/R'
 
-export default function Button(props) {
+export default function CustomButton(props) {
     return (
         <TouchableOpacity
             style={props.rounded ? styles.roundedButton : styles.button}

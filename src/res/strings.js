@@ -9,7 +9,8 @@ const strings = {
     filter: 'Filter by Year',
     sort: 'Sort',
     descending: 'Descending',
-    ascending: 'Ascending'
+    ascending: 'Ascending',
+    loadMore: 'Load more...'
 }
 
 export default strings

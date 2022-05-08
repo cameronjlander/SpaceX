@@ -7,15 +7,19 @@ import {
     View,
     Image,
     FlatList,
-    Alert
+    Alert,
+    Button
 } from 'react-native';
 import R from 'res/R'
 import LaunchItem from '../library/components/LaunchItem';
-import Button from '../library/components/Button';
+import CustomButton from '../library/components/CustomButton';
 import WheelPicker from 'react-native-wheely';
 
 export default function Launches() {
     const [isLoading, setLoading] = useState(true);
+    const [limit, setLimit] = useState(25);
+    const [offset, setOffset] = useState(0);
+    const [totalResults, setTotalResults] = useState(0);
     const [data, setData] = useState([]);
     const [showYearPicker, setShowYearPicker] = useState(false);
     const [years, setYears] = useState([]);
@@ -31,25 +35,26 @@ export default function Launches() {
             yearOptions.push(year.toString());
         }
         setYears(yearOptions);
-        fetchLaunches(sortDescending, selectedYear)
+        fetchLaunches(limit, offset, sortDescending, selectedYear)
     }, []);
 
     const refreshList = (sortDescending, selectedYear) => {
         setLoading(true)
+        setLimit(25)
+        setOffset(0)
+        setTotalResults(0)
         setData([])
-        fetchLaunches(sortDescending, selectedYear)
+        fetchLaunches(25, 0, sortDescending, selectedYear)
     }
 
-    const fetchLaunches = async (sortDescending, selectedYear) => {
-        setLoading(true)
-
+    const fetchLaunches = async (limit, offset, sortDescending, selectedYear) => {
         let baseUrl = 'https://api.spacexdata.com/v3'
-        let url = `${baseUrl}/launches`
+        let url = `${baseUrl}/launches?limit=${limit}&offset=${offset}`
 
         if (sortDescending) {
-            url += '?sort=launch_date_utc&order=desc'
+            url += '&sort=launch_date_utc&order=desc'
         } else {
-            url += '?sort=launch_date_utc&order=asc'
+            url += '&sort=launch_date_utc&order=asc'
         }
 
         if (selectedYear != "All") {
@@ -104,6 +109,28 @@ export default function Launches() {
         refreshList(!sortDescending, selectedYear);
     }
 
+    const handleLoadMore = () => {
+        if (isLoading) return
+
+        let newOffset = offset + 1
+        setOffset(newOffset)
+        fetchLaunches(limit, newOffset, sortDescending, selectedYear)
+    }
+
+    const renderFooter = () => {
+        if (isLoading) return
+
+        return (
+            <View style={{ margin: 8 }}>
+                <Button
+                    onPress={handleLoadMore}
+                    title={R.strings.loadMore}
+                />
+            </View>
+        )
+    }
+
+
     const renderEmptyContainer = () => {
         return (
             <View>
@@ -126,7 +153,7 @@ export default function Launches() {
                     source={R.images.launch_home}
                     style={styles.launchImg}
                 />
-                <Button
+                <CustomButton
                     text={R.strings.reload}
                     icon={R.icons.refresh}
                     rounded={true}
@@ -136,14 +163,14 @@ export default function Launches() {
 
             <View style={styles.horizontalContainer}>
                 <View style={styles.button}>
-                    <Button
+                    <CustomButton
                         text={R.strings.filter}
                         icon={R.icons.select}
                         onPress={() => toggleYearPicker()}
                     />
                 </View>
                 <View style={styles.button}>
-                    <Button
+                    <CustomButton
                         text={R.strings.sort + ' ' + sortOrder}
                         icon={R.icons.sort}
                         onPress={() => toggleSortOrder()}
@@ -172,6 +199,7 @@ export default function Launches() {
                             />
                         }
                         keyExtractor={(item, index) => index}
+                        ListFooterComponent={renderFooter()}
                         ListEmptyComponent={renderEmptyContainer()}
                     />
                 )}
