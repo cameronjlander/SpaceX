@@ -17,7 +17,6 @@ import WheelPicker from 'react-native-wheely';
 export default function Launches() {
     const [isLoading, setLoading] = useState(true);
     const [data, setData] = useState([]);
-    const [filteredList, setFilteredList] = useState([]);
     const [showYearPicker, setShowYearPicker] = useState(false);
     const [years, setYears] = useState([]);
     const [selectedYear, setSelectedYear] = useState(["All"]);
@@ -32,17 +31,16 @@ export default function Launches() {
             yearOptions.push(year.toString());
         }
         setYears(yearOptions);
-        fetchLaunches(sortDescending)
+        fetchLaunches(sortDescending, selectedYear)
     }, []);
 
-    const refreshList = (sortDescending) => {
+    const refreshList = (sortDescending, selectedYear) => {
         setLoading(true)
         setData([])
-        setFilteredList([])
-        fetchLaunches(sortDescending)
+        fetchLaunches(sortDescending, selectedYear)
     }
 
-    const fetchLaunches = async (sortDescending) => {
+    const fetchLaunches = async (sortDescending, selectedYear) => {
         setLoading(true)
 
         let baseUrl = 'https://api.spacexdata.com/v3'
@@ -52,6 +50,10 @@ export default function Launches() {
             url += '?sort=launch_date_utc&order=desc'
         } else {
             url += '?sort=launch_date_utc&order=asc'
+        }
+
+        if (selectedYear != "All") {
+            url += '&launch_year=' + selectedYear
         }
 
         try {
@@ -69,7 +71,6 @@ export default function Launches() {
                 try {
                     let responseJson = await response.json()
                     setData(responseJson);
-                    filterListByYear(responseJson, selectedYear)
                 } catch (errors) {
                     console.warn(errors)
                 }
@@ -90,16 +91,7 @@ export default function Launches() {
     const yearSelected = (index) => {
         let selectedYear = years[index];
         setSelectedYear(selectedYear);
-        filterListByYear(data, selectedYear)
-    }
-
-    const filterListByYear = (list, year) => {
-        if (year != "All") {
-            list = list.filter(function (item) {
-                return item.launch_year === year;
-            });
-        }
-        setFilteredList(list);
+        refreshList(sortDescending, selectedYear);
     }
 
     const toggleSortOrder = () => {
@@ -109,7 +101,7 @@ export default function Launches() {
         }
         setSortOrder(sortByText)
         setSortDescending(!sortDescending);
-        refreshList(!sortDescending);
+        refreshList(!sortDescending, selectedYear);
     }
 
     const renderEmptyContainer = () => {
@@ -138,7 +130,7 @@ export default function Launches() {
                     text={R.strings.reload}
                     icon={R.icons.refresh}
                     rounded={true}
-                    onPress={() => refreshList(sortDescending)}
+                    onPress={() => refreshList(sortDescending, selectedYear)}
                 />
             </View>
 
@@ -150,14 +142,6 @@ export default function Launches() {
                         onPress={() => toggleYearPicker()}
                     />
                 </View>
-                {showYearPicker && (
-                    <WheelPicker
-                        selectedIndex={years.indexOf(selectedYear)}
-                        options={years.map(year => year.toString())}
-                        onChange={(index) => yearSelected(index)}
-                    />
-                )}
-
                 <View style={styles.button}>
                     <Button
                         text={R.strings.sort + ' ' + sortOrder}
@@ -167,10 +151,18 @@ export default function Launches() {
                 </View>
             </View>
 
+            {showYearPicker && (
+                <WheelPicker
+                    selectedIndex={years.indexOf(selectedYear)}
+                    options={years.map(year => year.toString())}
+                    onChange={(index) => yearSelected(index)}
+                />
+            )}
+
             <View style={R.palette.resultsContainer}>
                 {isLoading ? <Text>{R.strings.loading}</Text> : (
                     <FlatList
-                        data={filteredList}
+                        data={data}
                         renderItem={({ item }) =>
                             <LaunchItem
                                 flightNumber={item.flight_number}
