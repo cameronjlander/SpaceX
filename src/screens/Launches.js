@@ -43,8 +43,8 @@ export default function Launches() {
                     console.warn(errors)
                 }
             } else {
-                let errorMsg = 'An error occurred fetching launches.'
-                Alert.alert(errorMsg, 'Please try again.')
+                let errorMsg = R.strings.errorFetchingLaunches
+                Alert.alert(errorMsg, R.strings.pleaseTryAgain)
             }
         } catch (errors) {
             console.warn(errors)
@@ -58,14 +58,14 @@ export default function Launches() {
                     source={R.images.spacex_logo}
                     style={styles.logo}
                 />
-                <Text style={styles.header}>LAUNCHES</Text>
+                <Text style={styles.header}>{R.strings.launches}</Text>
             </View>
             <Image
                 source={R.images.launch_home}
                 style={styles.launchImg}
             />
             <View style={R.palette.resultsContainer}>
-                {isLoading ? <Text>Loading...</Text> : (
+                {isLoading ? <Text>{R.strings.loading}</Text> : (
                     <FlatList
                         data={list}
                         renderItem={({ item }) =>
